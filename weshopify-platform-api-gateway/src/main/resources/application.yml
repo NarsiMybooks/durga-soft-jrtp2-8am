@@ -1,0 +1,96 @@
+spring: 
+  application: 
+    name: weshopify-platform-gateway
+  cloud:
+    gateway:
+      filter:
+        request-rate-limiter:
+          enabled: true
+            
+            
+      discovery:
+        locator:
+          enabled: true # to locate the routes in the registry
+      routes:
+      
+       #Categories service route
+       - id: WESHOPIFY-CATEGORY-SERVICE
+         uri: lb://WESHOPIFY-PLATFORM-CATEGORIES-SERVICE
+         predicates: 
+          - Path=/gateway-catg-sv/**
+         filters:
+            
+            - RewritePath=/gateway-catg-sv/(?<segment>.*),/${segment}
+                   
+            
+         #Brands Service Route 
+       - id: WESHOPIFY-BRANDS-SERVICE
+         uri: lb://WESHOPIFY-BRANDS-SERVICE
+         predicates: 
+          - Path=/gateway-brands-svc/**
+         filters:
+            -  RewritePath=/gateway-brands-svc/(?<segment>.*),/${segment}
+            - name: RequestRateLimiter
+              args:
+                key-resolver: '#{@userKeyResolver}'
+                redis-rate-limiter.replenishRate: 2
+                redis-rate-limiter.burstCapacity: 4
+                redis-rate-limiter.requestedTokens: 1
+                redis-rate-limiter.remaining: 0
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 1s
+      connect-timeout: 2s
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${SERVICE_REGISTRY_HOST:localhost}:${SERVICE_REGISTRY_PORT:8761}/eureka/
+  instance:
+    hostname: ${SERVICE_REGISTRY_HOST:localhost}
+    prefer-ip-address: ${REGISTRY_PREF_IP_ADDR:false}
+    
+management:
+  # from the springboot3.x onwards we have to 
+  #explicitely enable gateway endpoint
+  endpoint:
+    gateway:
+      enabled: true
+    health:
+      enabled: true
+      show-details: always
+      
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+    jmx:
+      exposure:
+        include:
+        - '*'
+
+  health:
+    redis:
+      enabled: true
+  zipkin:
+    tracing:
+      endpoint: http://${ZIPKIN_HOST:127.0.0.1}:${ZIPKIN_PORT:9411}/api/v2/spans
+      
+      
+      
+
+logging:
+#   level:
+#    root: debug 
+      
+   pattern: 
+     level: "%5p [${spring.zipkin.service.name:${spring.application.name:}},%X{traceId:-},%X{spanId:-}]"
+ 
+    
+             
+server:
+  port: 5012
+  
+
+

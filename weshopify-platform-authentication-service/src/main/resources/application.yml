@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: weshopify-platform-authz-service
+
+  security:
+    oauth2:
+      client:
+        registration:
+          weshopify-sp: 
+           client-id: testapp
+           client-secret: testapp 
+           authorization-grant-type: authorization_code,refresh_token,password,client_credentials
+           scope:
+            - apiAcces
+           
+          
+        provider:
+          wso2: 
+           token-uri: http://localhost:9015/oauth/token
+           authorization-uri: http://localhost:9015/oauth/authn
+           user-info-uri: http://localhost:9015/users
+
+server:
+  port: 9015

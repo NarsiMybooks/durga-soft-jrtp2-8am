@@ -1,0 +1,13 @@
+FROM openjdk:17-jdk-slim as build
+
+ARG ARTIFICAT_LOC=/opt/weshopify-gateway
+
+RUN mkdir ${ARTIFICAT_LOC}
+
+WORKDIR ${ARTIFICAT_LOC}
+
+COPY target/weshopify-gateway.jar ${WORKDIR}
+
+#ENTRYPOINT [ "java -jar weshopify-gateway.jar" ]
+
+CMD [ "sh" , "-c", "java -jar weshopify-gateway.jar"]
